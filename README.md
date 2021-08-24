@@ -30,19 +30,20 @@ export WALLET_ZIP="/tmp/Wallet_${DB_NAME}.zip"
 
 ``$ oci db autonomous-database generate-wallet --autonomous-database-id ${DB_ID} --password ${WALLET_PW} --file ${WALLET_ZIP}``
 
-- Extract Wallet:
+## Extract Wallet:
 ``$ unzip Wallet_demoadb.zip -d wallet_source``
 
-**Note** the database wallet has to be separately downloaded for primary and remote region's as tnsnames.ora DNS entries are slightly different.
+**Note** the database wallet on standby(DR) will not be available for download until the failover.
+The wallet has to be separately downloaded for primary and remote region's as tnsnames.ora DNS entries are slightly different.
 
+## Pre-Requisites (On Both Source and DR regions):
+
+Create OKE (Oracle Cloud Infrastructure Container Engine for Kubernetes) clusters using this 
+guide: https://www.oracle.com/webfolder/technetwork/tutorials/obe/oci/oke-full/index.html#DefineClusterDetails on both regions.
+	
+	
 # Mushop Setup (Source):
 
-## Pre-Requisites:
-
-This procedure assumes you have created a OKE (Oracle Cloud Infrastructure Container Engine for Kubernetes) cluster using this 
-guide: https://www.oracle.com/webfolder/technetwork/tutorials/obe/oci/oke-full/index.html#DefineClusterDetails
-	
-	
 The Mushop setup instructions are taken from: https://github.com/oracle-quickstart/oci-cloudnative/tree/master/deploy/complete/helm-chart#setup and tested as below:
 
 ``$ git clone https://github.com/oracle-quickstart/oci-cloudnative.git
@@ -58,8 +59,6 @@ $ cd oci-cloudnative/deploy/complete/helm-chart``
 ``$ helm install mushop-utils setup --namespace mushop-utilities --create-namespace
 
 $ kubectl create namespace mushop``
-
-## For this below step of adding secrets, do note to add ap-mumbai-1 for source and ap-hyderabad-1 for DR in our case. 
 
 ## The source region in this case would be ap-mumbai-1
 
@@ -96,14 +95,49 @@ global:
 
 $ helm install -f ./mushop/values-prod.yaml mymushop mushop -n mushop
 ```
+## Setting up the ingress (Source):
 
-## Perform Autonomous transaction Processing (ATP) Failover
+```openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout tls.key -out tls.crt -subj "/CN=nginxsvc/O=nginxsvc"
+kubectl create secret tls tls-secret --key tls.key --cert tls.crt -n mushop
+
+ cat << EOF | kubectl -n mushop apply -f -
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: mushop
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+spec:
+  tls:
+  - secretName: tls-secret
+  rules:
+  - http:
+      paths:
+      - backend:
+          serviceName: edge
+          servicePort: 80
+EOF
+```
+
+## Access the application:
+
+``$ kubectl get svc mushop-utils-ingress-nginx-controller -n mushop-utilities``
+
+## Test:
+
+Access http://Ingress-IP-Address and ensure that you would see the all the MuShop catalogue products listed without errors.
+
+
+# Perform Autonomous transaction Processing (ATP) Failover
 
 Go to OCI console and perform a failover.
+`` OCI-Console -> Standby db (ap-hyderabad-1) -> switchover``
+
+**Note: ** Wait till the switchover completes fully and there are no 'role change in progress' status on either side.
 
 # MuShop Setup (DR):
 
-Follow all the steps from MuShop Setup (Source), the changing steps are highlighted
+**Note** you must have changed your OKE cluster to DR. If you dont have a DR OKE cluster then refer to the pre-requisites section.
 
 ## The DR region would be ap-hyderabad-1:
 
@@ -118,6 +152,9 @@ Follow all the steps from MuShop Setup (Source), the changing steps are highligh
 ```
   
 ## Command for wallet would change for the DR:
+
+Download and extract the DR ADB wallet:
+`` OCI-Console -> Standby db (ap-hyderabad-1) -> Download wallet``
 
 ``$ kubectl create secret generic oadb-wallet   --namespace mushop   --from-file=/tmp/wallet_remote``
 
@@ -144,10 +181,7 @@ $ helm install -f ./mushop/values-prod.yaml mymushop mushop -n mushop
 
 ``
   
-  
-## Setting up the ingress :
-
-**Note**. The below ingress instructions has to be performed on both regions on the OKE nodes (ap-mumbai-1 and ap-hyderabad-1) :
+## Setting up the ingress (On DR ap-hyderabad-1) :
 
 ```openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout tls.key -out tls.crt -subj "/CN=nginxsvc/O=nginxsvc"
 kubectl create secret tls tls-secret --key tls.key --cert tls.crt -n mushop
@@ -171,7 +205,6 @@ spec:
 EOF
 ```
 
-
   
 # Access the cluster using the ingress IP:
 
@@ -179,7 +212,12 @@ EOF
 
 # Testing
   
-Note: Ensure that you have done the above steps on both the regions and can access the Mushop Page. For DR system the Mushop products would
-not be shown and a Error 500 would be displayed and this is because the DB on the DR site is on standby.
+Access http://Ingress-IP-Address and ensure that you would see the all the MuShop catalogue products listed without errors.
 
 
+# DR testing:
+
+You would notice that the source site has lost access to all the products within Mushop and the DR site has access to all the products as we switched over.
+
+# Conclusion:
+Further you can configure WAF and DNS traffic steering to perform the DNS switch automatically.
