@@ -1,4 +1,4 @@
-# oci-autonomous-adg
+# oci Autonomous Database DR setup with Mushop
 
 This repository holds the steps to perform Autonomous database disaster recovery using Mushop Demo application
 
