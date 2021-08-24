@@ -1,4 +1,4 @@
-# oci Autonomous Database DR setup with Mushop
+# OCI Autonomous Database DR setup with Mushop
 
 This repository holds the steps to perform Autonomous database disaster recovery using Mushop Demo application
 
@@ -31,7 +31,9 @@ export WALLET_ZIP="/tmp/Wallet_${DB_NAME}.zip"
 ``$ oci db autonomous-database generate-wallet --autonomous-database-id ${DB_ID} --password ${WALLET_PW} --file ${WALLET_ZIP}``
 
 ## Extract Wallet:
-``$ unzip Wallet_demoadb.zip -d wallet_source``
+``$ unzip Wallet_demoadb.zip -d /tmp/wallet_source``
+
+Keep this wallet handy we will need to add it as OKE secret.
 
 **Note** the database wallet on standby(DR) will not be available for download until the failover.
 The wallet has to be separately downloaded for primary and remote region's as tnsnames.ora DNS entries are slightly different.
@@ -133,11 +135,11 @@ Access http://Ingress-IP-Address and ensure that you would see the all the MuSho
 Go to OCI console and perform a failover.
 `` OCI-Console -> Standby db (ap-hyderabad-1) -> switchover``
 
-**Note: ** Wait till the switchover completes fully and there are no 'role change in progress' status on either side.
+**Note: ** Wait till the switchover completes fully and there are no 'role change in progress' status on either side. You can also use the CLI command but for better experience i suggest the console.
 
 # MuShop Setup (DR):
 
-**Note** you must have changed your OKE cluster to DR. If you dont have a DR OKE cluster then refer to the pre-requisites section.
+**Note** you must have changed your OKE cluster to DR. If you dont have a DR OKE cluster then refer to the pre-requisites section and create a OKE cluster at the DR region.
 
 ## The DR region would be ap-hyderabad-1:
 
