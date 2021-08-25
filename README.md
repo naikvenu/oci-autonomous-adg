@@ -123,7 +123,7 @@ EOF
 
 ## Access the application:
 
-``$ kubectl get svc mushop-utils-ingress-nginx-controller -n mushop-utilities``
+```$ kubectl get svc mushop-utils-ingress-nginx-controller -n mushop-utilities```
 
 ## Test:
 
@@ -133,7 +133,7 @@ Access http://Ingress-IP-Address and ensure that you would see the all the MuSho
 # Perform Autonomous transaction Processing (ATP) Failover
 
 Go to OCI console and perform a failover.
-`` OCI-Console -> Standby db (ap-hyderabad-1) -> switchover``
+``` OCI-Console -> Standby db (ap-hyderabad-1) -> switchover```
 
 **Note: ** Wait till the switchover completes fully and there are no 'role change in progress' status on either side. You can also use the CLI command but for better experience i suggest the console.
 
@@ -156,11 +156,11 @@ Go to OCI console and perform a failover.
 ## Command for wallet would change for the DR:
 
 Download and extract the DR ADB wallet:
-`` OCI-Console -> Standby db (ap-hyderabad-1) -> Download wallet``
+``` OCI-Console -> Standby db (ap-hyderabad-1) -> Download wallet
 
-``$ kubectl create secret generic oadb-wallet   --namespace mushop   --from-file=/tmp/wallet_remote``
+$ kubectl create secret generic oadb-wallet   --namespace mushop   --from-file=/tmp/wallet_remote
 
-``$ kubectl create secret generic oadb-admin \
+$ kubectl create secret generic oadb-admin \
   --namespace mushop \
   --from-literal=oadb_admin_pw='DemoAdb#1234'
   
@@ -181,7 +181,7 @@ global:
 
 $ helm install -f ./mushop/values-prod.yaml mymushop mushop -n mushop
 
-``
+```
   
 ## Setting up the ingress (On DR ap-hyderabad-1) :
 
@@ -210,7 +210,7 @@ EOF
   
 # Access the cluster using the ingress IP:
 
-``$ kubectl get svc mushop-utils-ingress-nginx-controller -n mushop-utilities``
+```$ kubectl get svc mushop-utils-ingress-nginx-controller -n mushop-utilities```
 
 # Testing
   
