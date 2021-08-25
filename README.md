@@ -16,22 +16,22 @@ export WALLET_ZIP="/tmp/Wallet_${DB_NAME}.zip"
 
 # Create the Source DB (region ap-mumbai-1)
 
-``$ oci db autonomous-database  create --compartment-id ${COMPARTMENT_ID} --db-name ${DB_NAME} --admin-password ${DB_PASSWORD} --db-version 19c --cpu-core-count 1 --data-storage-size-in-tbs 1 --display-name ${DB_DISPLAY_NAME}``
+```$ oci db autonomous-database  create --compartment-id ${COMPARTMENT_ID} --db-name ${DB_NAME} --admin-password ${DB_PASSWORD} --db-version 19c --cpu-core-count 1 --data-storage-size-in-tbs 1 --display-name ${DB_DISPLAY_NAME}```
 
 ## Get the Source DB OCID:
 
-``DB_ID=$(oci db autonomous-database list -c ${COMPARTMENT_ID} --query "data[?\"db-name\"=='${DB_NAME}'].id | [0]" --raw-output)``
+```DB_ID=$(oci db autonomous-database list -c ${COMPARTMENT_ID} --query "data[?\"db-name\"=='${DB_NAME}'].id | [0]" --raw-output)```
 
 ## Create the DR (Creating in region ap-hyderabad-1):
 
-``$ oci db autonomous-database  create-adb-cross-region-data-guard-details  --compartment-id ${COMPARTMENT_ID} --db-name ${DB_NAME} --source-id ${DB_ID} --cpu-core-count 1 --data-storage-size-in-tbs 1 --region ap-hyderabad-1 --db-version 19c``
+```$ oci db autonomous-database  create-adb-cross-region-data-guard-details  --compartment-id ${COMPARTMENT_ID} --db-name ${DB_NAME} --source-id ${DB_ID} --cpu-core-count 1 --data-storage-size-in-tbs 1 --region ap-hyderabad-1 --db-version 19c```
 
 ## Download the wallet:
 
-``$ oci db autonomous-database generate-wallet --autonomous-database-id ${DB_ID} --password ${WALLET_PW} --file ${WALLET_ZIP}``
+```$ oci db autonomous-database generate-wallet --autonomous-database-id ${DB_ID} --password ${WALLET_PW} --file ${WALLET_ZIP}```
 
 ## Extract Wallet:
-``$ unzip Wallet_demoadb.zip -d /tmp/wallet_source``
+```$ unzip Wallet_demoadb.zip -d /tmp/wallet_source```
 
 Keep this wallet handy we will need to add it as OKE secret.
 
@@ -48,19 +48,19 @@ guide: https://www.oracle.com/webfolder/technetwork/tutorials/obe/oci/oke-full/i
 
 The Mushop setup instructions are taken from: https://github.com/oracle-quickstart/oci-cloudnative/tree/master/deploy/complete/helm-chart#setup and tested as below:
 
-``$ git clone https://github.com/oracle-quickstart/oci-cloudnative.git
+```$ git clone https://github.com/oracle-quickstart/oci-cloudnative.git```
 
-$ cd oci-cloudnative/deploy/complete/helm-chart``
+```$ cd oci-cloudnative/deploy/complete/helm-chart ```
 
 ## Update chart dependencies:
 
-``$ helm dependency update ./setup``
+```$ helm dependency update ./setup```
 
 ## Install setup chart:
 
-``$ helm install mushop-utils setup --namespace mushop-utilities --create-namespace
+```$ helm install mushop-utils setup --namespace mushop-utilities --create-namespace```
 
-$ kubectl create namespace mushop``
+```$ kubectl create namespace mushop```
 
 ## The source region in this case would be ap-mumbai-1
 
@@ -223,3 +223,6 @@ You would notice that the source site has lost access to all the products within
 
 # Conclusion:
 Further you can configure WAF and DNS traffic steering to perform the DNS switch automatically.
+
+# Contributions:
+Feel free to raise a pull request and contribute additional steps that may help.
