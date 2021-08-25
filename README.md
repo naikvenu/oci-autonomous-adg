@@ -14,19 +14,19 @@ export WALLET_PW="DemoAdb#1234"
 export WALLET_ZIP="/tmp/Wallet_${DB_NAME}.zip"
 ```
 
-# Create the Source DB (region ap-mumbai-1)
+# Create the Source DB 
 
 ```$ oci db autonomous-database  create --compartment-id ${COMPARTMENT_ID} --db-name ${DB_NAME} --admin-password ${DB_PASSWORD} --db-version 19c --cpu-core-count 1 --data-storage-size-in-tbs 1 --display-name ${DB_DISPLAY_NAME}```
 
-## Get the Source DB OCID:
+## Get the Source DB OCID
 
 ```DB_ID=$(oci db autonomous-database list -c ${COMPARTMENT_ID} --query "data[?\"db-name\"=='${DB_NAME}'].id | [0]" --raw-output)```
 
-## Create the DR (Creating in region ap-hyderabad-1):
+## Create the DR ADB:
 
 ```$ oci db autonomous-database  create-adb-cross-region-data-guard-details  --compartment-id ${COMPARTMENT_ID} --db-name ${DB_NAME} --source-id ${DB_ID} --cpu-core-count 1 --data-storage-size-in-tbs 1 --region ap-hyderabad-1 --db-version 19c```
 
-## Download the wallet:
+## Download the wallet
 
 ```$ oci db autonomous-database generate-wallet --autonomous-database-id ${DB_ID} --password ${WALLET_PW} --file ${WALLET_ZIP}```
 
@@ -143,7 +143,8 @@ Go to OCI console and perform a failover.
 
 ## The DR region would be ap-hyderabad-1:
 
-```$ kubectl create secret generic oci-credentials \
+```
+$ kubectl create secret generic oci-credentials \
   --namespace mushop \
   --from-literal=tenancy=<TENANCY_OCID> \
   --from-literal=user=<USER_OCID> \
@@ -156,9 +157,9 @@ Go to OCI console and perform a failover.
 ## Command for wallet would change for the DR:
 
 Download and extract the DR ADB wallet:
-``` OCI-Console -> Standby db (ap-hyderabad-1) -> Download wallet
+``` OCI-Console -> Standby db (ap-hyderabad-1) -> Download wallet```
 
-$ kubectl create secret generic oadb-wallet   --namespace mushop   --from-file=/tmp/wallet_remote
+```$ kubectl create secret generic oadb-wallet   --namespace mushop   --from-file=/tmp/wallet_remote
 
 $ kubectl create secret generic oadb-admin \
   --namespace mushop \
