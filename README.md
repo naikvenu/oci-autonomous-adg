@@ -64,7 +64,8 @@ The Mushop setup instructions are taken from: https://github.com/oracle-quicksta
 
 ## The source region in this case would be ap-mumbai-1
 
-```$ kubectl create secret generic oci-credentials \
+```
+$ kubectl create secret generic oci-credentials \
   --namespace mushop \
   --from-literal=tenancy=<TENANCY_OCID> \
   --from-literal=user=<USER_OCID> \
